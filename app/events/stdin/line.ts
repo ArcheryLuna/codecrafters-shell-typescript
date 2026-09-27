@@ -30,6 +30,7 @@ class Line extends Event {
 
         if (CliCommand === null) {
             stdout.write(`${command}: command not found \n`)
+            stdout.write('$ ')
             return;
         } 
 
