@@ -1,13 +1,3 @@
-import { createInterface } from "node:readline";
+import { CodeCraftersCli } from "./classes/client";
 
-const rl = createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  prompt: "$ ",
-});
-
-rl.prompt();
-
-rl.on("line", (command) => {
-  console.log(`${command}: command not found`)
-})
+const CLI = new CodeCraftersCli().StartCLI();
