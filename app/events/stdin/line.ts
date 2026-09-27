@@ -1,6 +1,7 @@
 import { Event } from "@/classes/events";
 import { CodeCraftersCli as Client } from "@/classes/client";
 import { EventType } from "@/types/events/EventTypeEnum";
+import { stdout } from "node:process";
 
 class Line extends Event {
 
@@ -14,6 +15,8 @@ class Line extends Event {
 
     public override async run(command: string): Promise<void> {
         console.log(`${command}: command not found`);
+
+        stdout.write('$ ');
     }
 }
 
