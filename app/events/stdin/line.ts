@@ -24,7 +24,10 @@ class Line extends Event {
         return Command;
     }
 
-    public override async run(command: string): Promise<void> {
+    public override async run(input: string): Promise<void> {
+        const [command, ...rest]: string[] = input.trim().split(/\s+/);
+        const text: string = rest.join(" ");
+        
         // Get the command out of the hashmap
         const CliCommand = this.get_command(command);
 
@@ -34,7 +37,7 @@ class Line extends Event {
             return;
         } 
 
-        CliCommand.run(command);
+        CliCommand.run(text);
 
         stdout.write('$ ');
     }

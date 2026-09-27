@@ -3,18 +3,18 @@ import { Commands } from "@/classes/commands";
 import { CommandType } from "@/types/commands/CommandTypeEnum";
 import { stdout } from "node:process";
 
-class Exit extends Commands {
+class Echo extends Commands {
     constructor ( client: Client ) {
         super(client, {
-            name: 'exit',
-            description: 'Terminates the program',
+            name: 'echo',
+            description: 'copy\'s the users message to the standard output',
             type: CommandType.UTIL,
         })
     }
 
     public override async run(args: string) {
-        this.client.rl.close();
+       stdout.write(`${args}\n`) 
     }
 }
 
-export default Exit;
+export default Echo;
