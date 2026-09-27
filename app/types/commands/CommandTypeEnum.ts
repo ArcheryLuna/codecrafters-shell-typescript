@@ -1,5 +1,5 @@
 enum CommandType {
-    UTIL = "utils"
+    BUILTIN = 1
 };
 
 export { CommandType };

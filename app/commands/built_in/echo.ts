@@ -1,20 +1,20 @@
 import { CodeCraftersCli as Client} from "@/classes/client";
 import { Commands } from "@/classes/commands";
 import { CommandType } from "@/types/commands/CommandTypeEnum";
-import { exit, stdout } from "node:process";
+import { stdout } from "node:process";
 
-class Exit extends Commands {
+class Echo extends Commands {
     constructor ( client: Client ) {
         super(client, {
-            name: 'exit',
-            description: 'Terminates the program',
-            type: CommandType.UTIL,
+            name: 'echo',
+            description: 'copy\'s the users message to the standard output',
+            type: CommandType.BUILTIN,
         })
     }
 
     public override async run(args: string) {
-        exit();
+       stdout.write(`${args}\n`) 
     }
 }
 
-export default Exit;
+export default Echo;
