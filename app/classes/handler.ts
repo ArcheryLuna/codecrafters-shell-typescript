@@ -3,6 +3,7 @@ import type { CodeCraftersCli } from "./client";
 import path from "node:path";
 import { Event } from "./events";
 import { EventType } from "@/types/events/EventTypeEnum";
+import type { Commands } from "./commands";
 
 class Handler {
     public client: CodeCraftersCli;
@@ -53,6 +54,34 @@ class Handler {
 
             delete require.cache[file];
             // console.log(`[SUCCESS] Loaded event ${event.name}`);
+        }
+    }
+
+    public async load_commands(): Promise<void> {
+        const CommandFiles = await glob(this.modulePattern('commands'), {
+            ignore: ['**/index.ts']
+        })
+
+        for ( const File of CommandFiles ) {
+            const imported = await import(File);
+
+            const CommandConstructor = await (imported as { default?: new (client: CodeCraftersCli) => Commands}).default;
+
+            if (!CommandConstructor) {
+                console.log(`[WARNING] The command ${File} is missing a default export`);
+                continue;
+            }
+
+            const command: Commands = new CommandConstructor(this.client);
+
+            if (!command.name || !command.description || !command.type) {
+                delete require.cache[File];
+                console.log(`[WARNING] The command ${File} is missing a required property`);
+                continue;
+            }
+
+            this.client.commands.set(command.name, command);
+            // console.log(`[SUCCESS] Loaded command ${command.name}`);
         }
     }
 

@@ -2,6 +2,7 @@ import { Event } from "@/classes/events";
 import { CodeCraftersCli as Client } from "@/classes/client";
 import { EventType } from "@/types/events/EventTypeEnum";
 import { stdout } from "node:process";
+import type { Commands } from "@/classes/commands";
 
 class Line extends Event {
 
@@ -13,8 +14,26 @@ class Line extends Event {
         })
     }
 
+    private get_command(input: string): Commands | null {
+        const Command: Commands | undefined = this.client.commands.get(input);
+
+        if (!Command) {
+            return null;
+        }
+
+        return Command;
+    }
+
     public override async run(command: string): Promise<void> {
-        console.log(`${command}: command not found`);
+        // Get the command out of the hashmap
+        const CliCommand = this.get_command(command);
+
+        if (CliCommand === null) {
+            stdout.write(`${command}: command not found \n`)
+            return;
+        } 
+
+        CliCommand.run(command);
 
         stdout.write('$ ');
     }
