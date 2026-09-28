@@ -45,7 +45,7 @@ class Type extends Commands {
     }
 
     public override async run(text: string, args: string[]) {
-        const [ command ]: string[] = text.trim().split(/\s+/);
+        const [ command ] = args;
         if (!command) {
             stdout.write("You didn't enter a command\n")
             return;

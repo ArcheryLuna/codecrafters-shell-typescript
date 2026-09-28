@@ -14,7 +14,7 @@ class ChangeDir extends Commands {
         });
     }
 
-    public override async run(_text: string, args: string[]): Promise<void> {
+    public override async run(_text: string, args: string[], expandTilde: boolean[] = []): Promise<void> {
         let physical = false;
         let index = 0;
 
@@ -50,8 +50,9 @@ class ChangeDir extends Commands {
             }
             expanded = process.env.OLDPWD;
         } else {
-            expanded = input === "~" ? homedir()
-                : input.startsWith("~/") ? `${homedir()}/${input.slice(2)}`
+            const allowExpansion = expandTilde[index] !== false;
+            expanded = allowExpansion && input === "~" ? homedir()
+                : allowExpansion && input.startsWith("~/") ? `${homedir()}/${input.slice(2)}`
                 : input;
         }
 

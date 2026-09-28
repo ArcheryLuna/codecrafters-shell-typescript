@@ -6,6 +6,7 @@ import type { Commands } from "@/classes/commands";
 import path from "node:path";
 import { accessSync, constants, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
+import { parseCommand, type ShellWord } from "@/utils/parse-command";
 
 class Line extends Event {
 
@@ -51,13 +52,23 @@ class Line extends Event {
     }
 
     public override async run(input: string): Promise<void> {
-        const [commandName, ...args]: string[] = input.trim().split(/\s+/);
-        
-        if (!commandName) {
-            stdout.write(`${commandName}: command not found\n`)
-            stdout.write("$ ");
+        let words: ShellWord[];
+        try {
+            words = parseCommand(input);
+        } catch (error) {
+            stderr.write(`shell: ${(error as Error).message}\n`);
+            this.client.rl.prompt();
             return;
         }
+
+        const [commandWord, ...argumentWords] = words;
+        if (!commandWord) {
+            this.client.rl.prompt();
+            return;
+        }
+
+        const commandName = commandWord.value;
+        const args = argumentWords.map(word => word.value);
 
         const text = args.join(" ");
         const command = this.commands(commandName);
@@ -78,7 +89,7 @@ class Line extends Event {
                 }
                 break;
             case "object":
-                await command.run(text, args);
+                await command.run(text, args, argumentWords.map(word => word.expandTilde));
                 break;
             default:
                 stdout.write(`${commandName}: command not found`);
