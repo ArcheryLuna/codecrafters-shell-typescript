@@ -8,7 +8,7 @@ export function parseCommand(input: string): ShellWord[] {
     let value = "";
     let source = "";
     let started = false;
-    let quoted = false;
+    let quote: "'" | '"' | undefined;
 
     const finishWord = () => {
         if (!started) return;
@@ -19,11 +19,18 @@ export function parseCommand(input: string): ShellWord[] {
     };
 
     for (const character of input) {
-        if (character === "'") {
-            quoted = !quoted;
+        if (quote !== undefined) {
+            source += character;
+            if (character === quote) {
+                quote = undefined;
+            } else {
+                value += character;
+            }
+        } else if (character === "'" || character === '"') {
+            quote = character;
             started = true;
             source += character;
-        } else if (!quoted && /\s/.test(character)) {
+        } else if (/\s/.test(character)) {
             finishWord();
         } else {
             started = true;
@@ -32,7 +39,10 @@ export function parseCommand(input: string): ShellWord[] {
         }
     }
 
-    if (quoted) throw new Error("unterminated single quote");
+    if (quote !== undefined) {
+        const kind = quote === "'" ? "single" : "double";
+        throw new Error(`unterminated ${kind} quote`);
+    }
     finishWord();
     return words;
 }

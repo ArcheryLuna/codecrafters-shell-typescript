@@ -36,3 +36,37 @@ describe("single-quoted command arguments", () => {
         expect(() => parseCommand("echo 'unfinished")).toThrow("unterminated single quote");
     });
 });
+
+describe("double-quoted command arguments", () => {
+    test("preserves spaces and tabs", () => {
+        expect(values('echo "hello    world\ttest"')).toEqual([
+            "echo", "hello    world\ttest",
+        ]);
+    });
+
+    test("concatenates adjacent fragments but separates unquoted whitespace", () => {
+        expect(values('echo "hello""world" "hello"world "hello" "world"')).toEqual([
+            "echo", "helloworld", "helloworld", "hello", "world",
+        ]);
+    });
+
+    test("treats the other quote character literally and joins mixed fragments", () => {
+        expect(values(`echo "shell's test" 'say "hello"' pre"middle"'end'`)).toEqual([
+            "echo", "shell's test", 'say "hello"', "premiddleend",
+        ]);
+    });
+
+    test("preserves empty arguments and leaves expansion and escapes for later stages", () => {
+        expect(values(String.raw`echo "" ""x "a $HOME * ~ \ b"`)).toEqual([
+            "echo", "", "x", String.raw`a $HOME * ~ \ b`,
+        ]);
+        expect(parseCommand('"~" "~/app"')).toEqual([
+            { value: "~", expandTilde: false },
+            { value: "~/app", expandTilde: false },
+        ]);
+    });
+
+    test("rejects unclosed double quotes", () => {
+        expect(() => parseCommand('echo "unfinished')).toThrow("unterminated double quote");
+    });
+});
