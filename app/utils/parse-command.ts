@@ -19,14 +19,20 @@ export function parseCommand(input: string): ShellWord[] {
         started = false;
     };
 
-    for (const character of input) {
+    for (let index = 0; index < input.length; index++) {
+        const character = input[index]!;
         if (escaped) {
             value += character;
             source += character;
             escaped = false;
         } else if (quote !== undefined) {
             source += character;
-            if (character === quote) {
+            if (
+                quote === '"' && character === "\\" &&
+                (input[index + 1] === '"' || input[index + 1] === "\\")
+            ) {
+                escaped = true;
+            } else if (character === quote) {
                 quote = undefined;
             } else {
                 value += character;

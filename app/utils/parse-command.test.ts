@@ -56,7 +56,7 @@ describe("double-quoted command arguments", () => {
         ]);
     });
 
-    test("preserves empty arguments and leaves expansion and escapes for later stages", () => {
+    test("preserves empty arguments, literal backslash-space, and unexpanded variables", () => {
         expect(values(String.raw`echo "" ""x "a $HOME * ~ \ b"`)).toEqual([
             "echo", "", "x", String.raw`a $HOME * ~ \ b`,
         ]);
@@ -101,7 +101,7 @@ describe("backslash escaping outside quotes", () => {
         ]);
     });
 
-    test("keeps backslashes inside quotes unchanged", () => {
+    test("keeps backslashes before ordinary characters inside quotes", () => {
         expect(values(String.raw`echo 'a\ b' "c\ d"`)).toEqual([
             "echo", String.raw`a\ b`, String.raw`c\ d`,
         ]);
@@ -109,5 +109,48 @@ describe("backslash escaping outside quotes", () => {
 
     test("rejects a trailing escape instead of executing a partial command", () => {
         expect(() => parseCommand("echo unfinished\\")).toThrow("unfinished escape");
+    });
+});
+
+
+describe("backslashes in double quotes", () => {
+    test("escapes double quotes and backslashes", () => {
+        expect(values(String.raw`echo "A \\ escapes itself" "A \" inside double quotes"`)).toEqual([
+            "echo", String.raw`A \ escapes itself`, 'A " inside double quotes',
+        ]);
+    });
+
+    test("handles the stage examples and concatenates following fragments", () => {
+        expect(values(String.raw`echo "just'one'\\n'backslash"`)).toEqual([
+            "echo", String.raw`just'one'\n'backslash`,
+        ]);
+        expect(values(String.raw`echo "inside\"literal_quote."outside\"`)).toEqual([
+            "echo", 'inside"literal_quote.outside"',
+        ]);
+    });
+
+    test("retains backslashes before ordinary characters in double quotes", () => {
+        expect(values(String.raw`echo "\n \t \_ \ '"`)).toEqual([
+            "echo", String.raw`\n \t \_ \ '`,
+        ]);
+    });
+
+    test("leaves all backslashes literal in single quotes", () => {
+        expect(values(String.raw`echo '\\ \"'`)).toEqual([
+            "echo", String.raw`\\ \"`,
+        ]);
+    });
+
+    test("parses escaped filename characters", () => {
+        expect(values(String.raw`cat /tmp/"number 1" /tmp/"doublequote \" 2" /tmp/"backslash \\ 3"`)).toEqual([
+            "cat", "/tmp/number 1", '/tmp/doublequote " 2', String.raw`/tmp/backslash \ 3`,
+        ]);
+    });
+
+    test("distinguishes escaped closing quotes from escaped backslashes", () => {
+        expect(() => parseCommand(String.raw`echo "unfinished\"`)).toThrow("unterminated double quote");
+        expect(values(String.raw`echo "ends\\" next`)).toEqual([
+            "echo", "ends\\", "next",
+        ]);
     });
 });
