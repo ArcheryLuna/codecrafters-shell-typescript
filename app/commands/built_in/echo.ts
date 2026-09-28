@@ -12,8 +12,8 @@ class Echo extends Commands {
         })
     }
 
-    public override async run(args: string) {
-       stdout.write(`${args}\n`) 
+    public override async run(text: string, args: string[]) {
+       stdout.write(`${text}\n`) 
     }
 }
 
