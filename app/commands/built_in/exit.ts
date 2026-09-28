@@ -13,7 +13,7 @@ class Exit extends Commands {
     }
 
     public override async run(text: string, args: string[]) {
-        this.client.rl.close();         
+        exit();
     }
 }
 
