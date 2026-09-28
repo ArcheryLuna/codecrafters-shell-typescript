@@ -69,6 +69,7 @@ class Line extends Event {
             case "string":
                 const result = spawnSync(command, args, {
                     argv0: commandName,
+                    env: { ...process.env },
                     stdio: "inherit"
                 })
 
