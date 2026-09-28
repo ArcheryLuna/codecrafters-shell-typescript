@@ -70,3 +70,44 @@ describe("double-quoted command arguments", () => {
         expect(() => parseCommand('echo "unfinished')).toThrow("unterminated double quote");
     });
 });
+
+
+describe("backslash escaping outside quotes", () => {
+    test("preserves escaped whitespace and splits unescaped whitespace", () => {
+        expect(values(String.raw`echo three\ \ \ spaces before\     after`)).toEqual([
+            "echo", "three   spaces", "before ", "after",
+        ]);
+        expect(values("echo a\\\tb")).toEqual(["echo", "a\tb"]);
+    });
+
+    test("escapes ordinary characters without interpreting control sequences", () => {
+        expect(values(String.raw`echo test\nexample ignore\_backslash \t`)).toEqual([
+            "echo", "testnexample", "ignore_backslash", "t",
+        ]);
+    });
+
+    test("keeps escaped quotes and special characters literal", () => {
+        expect(values(String.raw`echo \'\"literal quotes\"\' hello\\world \$\*\?`)).toEqual([
+            "echo", `'"literal`, `quotes"'`, String.raw`hello\world`, "$*?",
+        ]);
+        expect(parseCommand(String.raw`\~`)).toEqual([
+            { value: "~", expandTilde: false },
+        ]);
+    });
+
+    test("combines escaped characters with quoted fragments", () => {
+        expect(values(String.raw`echo pre\ "middle"'end'`)).toEqual([
+            "echo", "pre middleend",
+        ]);
+    });
+
+    test("keeps backslashes inside quotes unchanged", () => {
+        expect(values(String.raw`echo 'a\ b' "c\ d"`)).toEqual([
+            "echo", String.raw`a\ b`, String.raw`c\ d`,
+        ]);
+    });
+
+    test("rejects a trailing escape instead of executing a partial command", () => {
+        expect(() => parseCommand("echo unfinished\\")).toThrow("unfinished escape");
+    });
+});
