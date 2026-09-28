@@ -24,10 +24,10 @@ class CodeCraftersCli {
 
     }
 
-    private Handlers(): boolean {
+    private async Handlers(): Promise<boolean> {
         try {
-            this.handler.load_events();
-            this.handler.load_commands();
+            await this.handler.load_commands();
+            await this.handler.load_events();
         } catch (exception) {
             console.error(`[ERROR]: ${exception}`);
 
@@ -65,8 +65,8 @@ class CodeCraftersCli {
         }
     }
 
-    public StartCLI() {
-        const validation: boolean = this.Handlers();
+    public async StartCLI(): Promise<void> {
+        const validation: boolean = await this.Handlers();
 
         this.GetLogicalCwd()
 

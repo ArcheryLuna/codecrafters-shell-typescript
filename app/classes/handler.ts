@@ -87,7 +87,7 @@ class Handler {
 
     private modulePattern(directory: string): string {
         if (process.env.CLI_BUNDLED_ENTRYPOINTS === '1') {
-            return path.join(path.dirname(process.argv[1]!), directory, '**/.js');
+            return path.join(path.dirname(process.argv[1]!), directory, '**/*.js');
         }
 
         return path.join(__dirname, '..', directory, '**/*.{js,ts}');
